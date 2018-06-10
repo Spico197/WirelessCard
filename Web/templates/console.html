@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>
+        控制台
+    </title>
+    <link rel="stylesheet" href="{% static 'css/semantic.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/icon.css' %}">
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/semantic.js' %}"></script>
+    <script src="{% static 'js/exporting.js' %}"></script>
+    <script src="{% static 'js/highcharts.js' %}"></script>
+    <script src="{% static 'js/highcharts-more.js' %}"></script>
+
+</head>
+
+<body>
+<div class="ui thin visible left sidebar inverted vertical menu">
+    <div class="header item">
+        {#        <img src="{% static 'images/logo2.png'%}">#}
+    </div>
+    <div class="item">
+        <a href="/console/">控制台首页</a>
+        <i class="browser icon"></i>
+    </div>
+    <div class="item">
+        <a href="/console/user/">用户</a>
+        <i class="users icon"></i>
+    </div>
+    <div class="item">
+        <a href="/console/data/">数据</a>
+        <i class="cloud icon"></i>
+    </div>
+    <div class="item">
+        <a href="/console/device/">设备</a>
+        <i class="tablet icon"></i>
+    </div>
+    <div class="item">
+        <a href="/console/device_register/">设备注册</a>
+        <i class="cube icon"></i>
+    </div>
+    <div class="item">
+        <a href="/console/user_register/">用户注册</a>
+        <i class="add user icon"></i>
+    </div>
+</div>
+
+<div class="pusher">
+    <div class="ui menu">
+        <div class="header item" id="menu">
+                菜单
+            <i class="content icon"></i>
+        </div>
+        <div class="item">
+            <a href="/console/user/">用户</a>
+        </div>
+        <div class="item">
+            <a href="/console/data/">数据</a>
+        </div>
+        <div class="item">
+            <a href="/console/device/">设备</a>
+        </div>
+        <div class="item">
+                <a href="/console/device_register/">设备注册</a>
+        </div>
+        <div class="item">
+            <a href="/console/user_register/">用户注册</a>
+        </div>
+    </div>
+    <div class="ui equal width grid" style="margin:5px 0 5px 0;width:70%">
+        <div class="row">
+            <div class="column">
+                <div class="ui green segment">
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{ device_number }}
+                        </div>
+                        <div class="label">
+                            设备数
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui red segment">
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{ user_number }}
+                        </div>
+                        <div class="label">
+                            用户数
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui blue segment">
+                    <div class="ui statistic">
+                        <div class="value">
+                            {{ user_data_number }}
+                        </div>
+                        <div class="label">
+                            数据条目
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui divider">
+        <div class="ui equal width grid" style="margin:5px 0 5px 0;width:70%">
+            <div class="row">
+                <div class="column">
+                    <div class="ui container segment">
+                        <form action="/console/" method="post">
+                            {% csrf_token %}
+                            用户号或设备号数据查询：<br /><br />
+                            用户UID：
+                            <input type="text" name="uid">
+                            设备号：
+                            <input type="text" name="device_id">
+                            <input type="submit" value="搜索">
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <div class="ui container segment">
+                        用户操作
+                        <table class="ui celled table">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>uid</th>
+                                    <th>动作号</th>
+                                    <th>用户所属部门</th>
+                                    <th>设备号</th>
+                                    <th>描述</th>
+                                    <th>被操作用户</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in user_data %}
+                                <tr> 
+                                    <td>{{ user.time }}</td>
+                                    <td>{{ user.uid }}</td>
+                                    <td>{{ user.action_num }}</td>
+                                    <td>{{ user.department }}</td>
+                                    <td>{{ user.device_id }}</td>
+                                    <td>{{ user.description }}</td>
+                                    <td>{{ user.toUser }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="column">
+                    <div class="ui container segment">
+                        设备操作
+                        <table class="ui celled table">
+                            <thead>
+                                <tr>
+                                    <th>时间</th>
+                                    <th>uid</th>
+                                    <th>动作号</th>
+                                    <th>用户所属部门</th>
+                                    <th>设备号</th>
+                                    <th>描述</th>
+                                    <th>被操作用户</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in device_data %}
+                                <tr> 
+                                    <td>{{ user.time }}</td>
+                                    <td>{{ user.uid }}</td>
+                                    <td>{{ user.action_num }}</td>
+                                    <td>{{ user.department }}</td>
+                                    <td>{{ user.device_id }}</td>
+                                    <td>{{ user.description }}</td>
+                                    <td>{{ user.toUser }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $('#menu').click(function () {
+        $('.ui.sidebar').sidebar('toggle');
+    });
+</script>
+</body>
+</html>
