@@ -98,12 +98,20 @@ void Screen::ScreenCmd(String position, String text)
 
 /*
  * @intro: 读取屏幕返回的信息
- * @return <byte>: 返回屏幕操作后的返回代码
+ * @return <int>: 返回屏幕操作后的返回代码；若为-1，则无数据读取
  */
-byte Screen::ScreenRead()
+int Screen::ScreenRead()
 {
-    if (ScreenSerial.available())
-        return byte(ScreenSerial.read());
+    String str = "";
+    while (ScreenSerial.available())
+    {
+        delay(3);
+        str += char(ScreenSerial.read());
+    }
+    if (str.length() > 0)
+        return str.toInt();
+    else
+        return -1;
 }
 
 /*
@@ -162,6 +170,7 @@ void Card::jsonDataUpdate()
  */
 void Card::jsonDataUpdate(String deviceID, String uid, int action, String adminUID, String adminPSWD)
 {
+    uid = uid.toUpperCase();
     jsonConstruct(deviceID, uid, action, adminUID, adminPSWD);
     WIFISerial.print("POST /data_post HTTP/1.1\r\n");
     WIFISerial.print("Host: 39.108.7.66\r\n");
@@ -181,17 +190,28 @@ String Card::errorNo2Info(int ch)
     String re;
     switch (ch)
     {
-        case 0: re = "上传成功"; break;
-        case 1: re = "数据处理失败"; break;
-        case 2: re = "用户不存在"; break;
-        case 3: re = "卡号错误"; break;
-        case 4: re = "管理员账号错误"; break;
-        case 5: re = "模式错误"; break;
-        case 6: re = "设备号错误"; break;
-        case 7: re = "数据格式错误"; break;
-        case 8: re = "请求错误"; break;
-        case 9: re = "账户已存在"; break;
-        default: re = "用户已存在"; break;
+        // case 0: re = "上传成功"; break;
+        // case 1: re = "数据处理失败"; break;
+        // case 2: re = "用户不存在"; break;
+        // case 3: re = "卡号错误"; break;
+        // case 4: re = "管理员账号错误"; break;
+        // case 5: re = "模式错误"; break;
+        // case 6: re = "设备号错误"; break;
+        // case 7: re = "数据格式错误"; break;
+        // case 8: re = "请求错误"; break;
+        // case 9: re = "账户已存在"; break;
+        // default: re = "用户已存在"; break;
+        case 0: re = "success"; break;
+        case 1: re = "data process error"; break;
+        case 2: re = "user not exist"; break;
+        case 3: re = "wrong uid"; break;
+        case 4: re = "admin account error"; break;
+        case 5: re = "mode error"; break;
+        case 6: re = "device_id error"; break;
+        case 7: re = "data type error"; break;
+        case 8: re = "request error"; break;
+        case 9: re = "account is existed"; break;
+        default: re = "user is existed"; break;
     }
     return re;
 }
@@ -202,29 +222,28 @@ String Card::errorNo2Info(int ch)
  */
 int Card::jsonDataReturn()
 {
-    char temp, pos1, pos2;
-    String inputString, jsonString;
-    // memset(esp8266buffer, 0, 256);
-    // WIFISerial.readBytes(esp8266buffer, 256);
-    for (unsigned char ii = 0; ii < 256; ii++) {
-        if (WIFISerial.available())
-            inputString += char(WIFISerial.read());
-        else
-            break;
-    }
-    // debug statement: output the inputString:
-    // DebugSerial.println(inputString);
-    if (inputString.substring("HTTP/1.1 200 OK") != -1)
+    char temp;
+    int pos;
+    int commaPosition, commaPosition1, commaPosition2;
+    String inputString, jsonString, wantedString1, wantedString2;
+    memset(esp8266buffer, 0, 256);
+    WIFISerial.readBytes(esp8266buffer, 256);
+    for (unsigned int ii = 0; ii < 256; ii++) 
     {
-        pos1 = inputString.indexOf('{');
-        pos2 = inputString.indexOf('}');
-        if (pos1 != -1 && pos2 != -1 && pos2 > pos1)
-        {
-            jsonString = inputString.substring(pos1, pos2 - pos1 + 1);
-            JsonObject& reJson = returnJsonBuffer.parseObject(jsonString);
-            if (reJson.success())
-                return int(reJson["error"]);
-        }
+        temp=esp8266buffer[ii];
+        inputString += temp;
+    }
+    // DebugSerial.println(inputString);
+    if (inputString.indexOf("HTTP/1.1 200 OK") != -1)
+    {
+        commaPosition=inputString.indexOf('{');
+        wantedString1=inputString.substring(commaPosition,inputString.length());
+        DebugSerial.println(wantedString1);
+        commaPosition1=wantedString1.indexOf('}');
+        commaPosition2=wantedString1.indexOf(':');
+        wantedString2=wantedString1.substring(commaPosition2+2, commaPosition1);
+        // DebugSerial.println(wantedString2);
+        return wantedString2.toInt();
     }
     return -1;
 }

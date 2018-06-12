@@ -76,7 +76,7 @@ class Screen
 {
 public:
     void ScreenCmd(String position, String text);
-    byte ScreenRead();
+    int ScreenRead();
 };
 
 #endif
