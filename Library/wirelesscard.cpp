@@ -1,4 +1,4 @@
-#include "wirelesscard.h"
+#include <wirelesscard.h>
 
 
 /*
@@ -83,13 +83,25 @@ void Card::WIFIInit(String WiFiSSID, String WiFiPASSWORD)
 
 /*
  * @intro: 向屏幕发送指令信息，以改变屏幕信息。
- * @example: card.ScreenCmd("title", "你好"); // 把title模块的文本信息改为“你好”
+ * @example: screen.ScreenCmd("title", "你好"); // 把title模块的文本信息改为“你好”
  * @param <String> position: 需更改的模块，如"title"
  * @param <String> text: 更改为什么内容
  */
 void Screen::ScreenCmd(String position, String text)
 {
     String cmd = position + ".txt=" + '"' + text + '"';
+    ScreenSerial.write(cmd.c_str());
+    ScreenSerial.write(0xff);
+    ScreenSerial.write(0xff);
+    ScreenSerial.write(0xff);
+}
+
+/*
+ * @intro: 向HMI屏幕发送信息
+ * @param <String> cmd: 指令信息，详见HMI屏幕指令集
+ */
+void Screen::ScreenCmd(String cmd)
+{
     ScreenSerial.write(cmd.c_str());
     ScreenSerial.write(0xff);
     ScreenSerial.write(0xff);
@@ -170,7 +182,6 @@ void Card::jsonDataUpdate()
  */
 void Card::jsonDataUpdate(String deviceID, String uid, int action, String adminUID, String adminPSWD)
 {
-    uid = uid.toUpperCase();
     jsonConstruct(deviceID, uid, action, adminUID, adminPSWD);
     WIFISerial.print("POST /data_post HTTP/1.1\r\n");
     WIFISerial.print("Host: 39.108.7.66\r\n");
