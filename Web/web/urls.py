@@ -18,7 +18,7 @@ from django.contrib import admin
 from MainApp.views import *
 
 urlpatterns = [
-    url(r'^admin/$', admin.site.urls),
+    url(r'^admin/', admin.site.urls),
     url(r'^console/$', console),
     url(r'^console/user/$', console_user),
     url(r'^console/data/$', console_user_data),
@@ -26,6 +26,6 @@ urlpatterns = [
     url(r'^console/device_register/$', console_device_register),
     url(r'^console/user_register/$', console_user_register),
     url(r'^data_post/', data_post),
-    url(r'/', data_post),
+    url(r'/', console),
     url(r'', data_post),
 ]

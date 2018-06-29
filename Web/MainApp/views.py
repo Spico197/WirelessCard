@@ -51,7 +51,7 @@ def uid_check(string):
     if isinstance(string, str):
         if len(string) == 8:
             for character in string:
-                if character not in "0123456789ABCDEF":
+                if character not in "0123456789ABCDEFabcdef":
                     flag = False
                     break
         else:
@@ -137,6 +137,11 @@ def post_data_check(data):
         flag = 7
     return flag
 
+def decodeString(string):
+    re = ""
+    for ch in list(string):
+        re += chr(ord(ch)-1)
+    return re
 
 def data_post(request):
     response = {
@@ -144,10 +149,23 @@ def data_post(request):
         'uid': None,
     }
     if request.method == 'POST':
+        # print(request)
+        # print(request.body)
         try:
             try:
+                print(request.body)
                 post_data = post_data_process(request.body) # convert request data to dict (json)
+                if post_data['uid'] != "":
+                    post_data['uid'] = post_data['uid'].upper()
+                    post_data['uid'] = decodeString(post_data['uid'])
+                if post_data['admin']['admin_uid'] != "":
+                    post_data['admin']['admin_uid'] = post_data['admin']['admin_uid'].upper()
+                    post_data['admin']['admin_uid'] = decodeString(post_data['admin']['admin_uid'])
+                if post_data['admin']['admin_pswd'] != "":
+                    post_data['admin']['admin_pswd'] = post_data['admin']['admin_pswd'].upper() 
+                    post_data['admin']['admin_pswd'] = decodeString(post_data['admin']['admin_pswd'])
                 print(post_data)
+                # print(decodeString(post_data['uid']))
             except:
                 # 数据处理失败
                 response['error'] = 1
@@ -251,11 +269,13 @@ def data_post(request):
     else:
         # 不是POST请求
         response['error'] = 8
-
+    
+    del response['uid']
     res = JsonResponse(response)
     del res['Date']
     del res['Server']
     del res['X-Frame-Options']
+    print("error: ", response['error'])
     # return HttpResponse(simplejson.dumps(response), content_type='application/json')
     return res
 

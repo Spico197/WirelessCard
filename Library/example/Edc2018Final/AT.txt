@@ -1,0 +1,33 @@
++++
+
+AT
+
+AT+RESTORE
+
+AT+CWMODE=1
+
+AT+CIPMUX=0
+
+AT+CWLAP
+
+AT+CWDHCP=1,1
+
+AT+CIPSTA="192.168.1.103","192.168.1.110","255.255.255.0"
+
+AT+CWJAP="EDC2018","ASDFGHJKL"
+
+AT+CIFSR
+
+AT+CIPSTART="TCP","192.168.1.101",2333
+
+AT+CIPMODE=1
+
+AT+CIPSEND
+
+
+POST /data_post HTTP/1.1
+Host: 192.168.1.101
+Content-Type: application/json
+Content-Length: 98
+
+{"device_id": "123XX123","uid": "AADAD123","action": 0, "admin": {"admin_uid":"","admin_pswd":""}}

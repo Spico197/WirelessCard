@@ -1,4 +1,4 @@
-#include <wirelesscard.h>
+#include "wirelesscard.h"
 
 
 /*
@@ -33,75 +33,121 @@ String Card::readUID()
  * @param <String> WiFiSSID:WIFI热点名称
  * @param <String> WiFiPASSWORD: WIFI热点密码
  */
-void Card::WIFIInit(String WiFiSSID, String WiFiPASSWORD)
+void Card::WIFIInit(String WiFiSSID, String WiFiPASSWORD, Screen& screen)
 {
     DebugSerial.println("Setting start");
+    screen.ScreenCmd("dis", "Setting start");
     //ESP8266通电启动等待
     delay(10000);
+    
     //如果是透传模式，退出透传
     DebugSerial.println("Exit pass-through mode");
+    screen.ScreenCmd("dis", "Exit pass-through mode");
     WIFISerial.print("+++");
     delay(1000);
+    
     WIFISerial.print("AT\r\n");
     delay(1000);
-    wifiSerialPrint();
+    wifiSerialPrint(screen);
+    
     //关闭命令回显
     DebugSerial.println("Close command echo");
+    screen.ScreenCmd("dis", "Close command echo");
     WIFISerial.print("ATE0\r\n");
     delay(1000);
-    wifiSerialPrint();
+    wifiSerialPrint(screen);
+
+    DebugSerial.println("RESTORE");
+    screen.ScreenCmd("dis", "RESTORE");
+    WIFISerial.print("AT+RESTORE\r\n");
+    delay(1000);
+    wifiSerialPrint(screen);
+    delay(500);
+    
     //设置WiFi应用模式为 Station
     DebugSerial.println("Choose station mode");
+    screen.ScreenCmd("dis", "Choose station mode");
     WIFISerial.print("AT+CWMODE=1\r\n");
     delay(1000);
-    wifiSerialPrint();
+    wifiSerialPrint(screen);
+    
+    DebugSerial.println("MUX MODE 0");
+    screen.ScreenCmd("dis", "MUX MODE 0");
+    WIFISerial.print("AT+CIPMUX=0\r\n");
+    delay(5000);
+    wifiSerialPrint(screen);
+    
     DebugSerial.println("Connect to wireless router");
-    WIFISerial.print("AT+CWJAP=\"");
-    WIFISerial.print(WiFiSSID);
-    WIFISerial.print("\",\"");
-    WIFISerial.print(WiFiPASSWORD);
-    WIFISerial.print("\"\r\n");
-    delay(10000);
-    wifiSerialPrint();
+    screen.ScreenCmd("dis", "Connect to wireless router");
+    WIFISerial.print("AT+CWLAP\r\n");
+    delay(1000);
+    wifiSerialPrint(screen);
+    delay(1000);
+    wifiSerialPrint(screen);
+    delay(1000);
+    wifiSerialPrint(screen);
+
+    WIFISerial.print("AT+CWDHCP=1,1\r\n");
+    DebugSerial.println("AT+CWDHCP=1,1\r\n");
+    delay(1000);
+    wifiSerialPrint(screen);
+
+    WIFISerial.print("AT+CIPSTA=\"192.168.1.103\",\"192.168.1.110\",\"255.255.255.0\"\r\n");
+    DebugSerial.println("AT+CWDHCP=1,1\r\n");
+    delay(1000);
+    wifiSerialPrint(screen);
+    
+    String wificmd = "AT+CWJAP=\"" + WiFiSSID + "\",\"" + WiFiPASSWORD + "\"\r\n";
+    WIFISerial.print(wificmd);
+    DebugSerial.println(wificmd);
+    delay(15000);
+    wifiSerialPrint(screen);
+    delay(5000);
+    wifiSerialPrint(screen);
+
+    DebugSerial.println("IP: ");
+    screen.ScreenCmd("dis", "IP: ");
+    WIFISerial.print("AT+CIFSR\r\n");
+    delay(1000);
+    wifiSerialPrint(screen);
+    delay(500);
+    
     DebugSerial.println("Connect to Server");
-    WIFISerial.print("AT+CIPSTART=\"TCP\",\"39.108.7.66\",2333\r\n");
+    screen.ScreenCmd("dis", "Connect to Server");
+    // WIFISerial.print("AT+CIPSTART=\"TCP\",\"39.108.7.66\",2333\r\n");
+	  WIFISerial.print("AT+CIPSTART=\"TCP\",\"192.168.1.101\",2333\r\n");
+    DebugSerial.print("AT+CIPSTART=\"TCP\",\"192.168.1.101\",2333\r\n");
     delay(8000);
-    wifiSerialPrint();
+    wifiSerialPrint(screen);
+    delay(500);
+    
     //设置模块传输模式为透传模式
     DebugSerial.println("Choose pass-through mode");
+    screen.ScreenCmd("dis", "Choose pass-through mode");
     WIFISerial.print("AT+CIPMODE=1\r\n");
     delay(3000);
-    wifiSerialPrint();
+    wifiSerialPrint(screen);
+    
     //进入透传模式
     DebugSerial.println("Enter pass-through mode");
+    screen.ScreenCmd("dis", "Enter pass-through mode");
     WIFISerial.print("AT+CIPSEND\r\n");
     delay(1000);
-    wifiSerialPrint();
+    wifiSerialPrint(screen);
+    
     DebugSerial.println("Setting over");
-    delay(2000);
+    delay(500);
 }
 
 /*
  * @intro: 向屏幕发送指令信息，以改变屏幕信息。
- * @example: screen.ScreenCmd("title", "你好"); // 把title模块的文本信息改为“你好”
+ * @example: card.ScreenCmd("title", "你好"); // 把title模块的文本信息改为“你好”
  * @param <String> position: 需更改的模块，如"title"
  * @param <String> text: 更改为什么内容
  */
 void Screen::ScreenCmd(String position, String text)
 {
     String cmd = position + ".txt=" + '"' + text + '"';
-    ScreenSerial.write(cmd.c_str());
-    ScreenSerial.write(0xff);
-    ScreenSerial.write(0xff);
-    ScreenSerial.write(0xff);
-}
-
-/*
- * @intro: 向HMI屏幕发送信息
- * @param <String> cmd: 指令信息，详见HMI屏幕指令集
- */
-void Screen::ScreenCmd(String cmd)
-{
     ScreenSerial.write(cmd.c_str());
     ScreenSerial.write(0xff);
     ScreenSerial.write(0xff);
@@ -120,6 +166,7 @@ int Screen::ScreenRead()
         delay(3);
         str += char(ScreenSerial.read());
     }
+//    DebugSerial.println("ScreenReadFunction: " + str);
     if (str.length() > 0)
         return str.toInt();
     else
@@ -142,6 +189,7 @@ void Card::jsonConstruct(String deviceID, String uid, int action)
     jsonAdmin["admin_uid"] = "";
     jsonAdmin["admin_pswd"] = "";
 }
+
 
 /*
  * @intro: 构建json数据
@@ -166,18 +214,27 @@ void Card::jsonConstruct(String deviceID, String uid, int action, String adminUI
     jsonAdmin["admin_pswd"] = adminPSWD;
 }
 
+
 /*
  * @intro: 上传json数据
  */
 void Card::jsonDataUpdate()
 {
     WIFISerial.print("POST /data_post HTTP/1.1\r\n");
-    WIFISerial.print("Host: 39.108.7.66\r\n");
+    WIFISerial.print("Host: 192.168.1.101\r\n");
     WIFISerial.print("Content-Type: application/json\r\n");
     WIFISerial.print("Content-Length: " + String(jsonData.measureLength()) + "\r\n");
     WIFISerial.print("\r\n");
     jsonData.printTo(WIFISerial);
     WIFISerial.print("\r\n");
+
+    DebugSerial.print("POST /data_post HTTP/1.1\r\n");
+    DebugSerial.print("Host: 192.168.1.101\r\n");
+    DebugSerial.print("Content-Type: application/json\r\n");
+    DebugSerial.print("Content-Length: " + String(jsonData.measureLength()) + "\r\n");
+    DebugSerial.print("\r\n");
+    jsonData.printTo(DebugSerial);
+    DebugSerial.print("\r\n");
 }
 
 /*
@@ -190,9 +247,10 @@ void Card::jsonDataUpdate()
  */
 void Card::jsonDataUpdate(String deviceID, String uid, int action, String adminUID, String adminPSWD)
 {
+    uid.toUpperCase();
     jsonConstruct(deviceID, uid, action, adminUID, adminPSWD);
     WIFISerial.print("POST /data_post HTTP/1.1\r\n");
-    WIFISerial.print("Host: 39.108.7.66\r\n");
+    WIFISerial.print("Host: 192.168.1.101\r\n");
     WIFISerial.print("Content-Type: application/json\r\n");
     WIFISerial.print("Content-Length: " + String(jsonData.measureLength()) + "\r\n");
     WIFISerial.print("\r\n");
@@ -220,17 +278,19 @@ String Card::errorNo2Info(int ch)
         // case 8: re = "请求错误"; break;
         // case 9: re = "账户已存在"; break;
         // default: re = "用户已存在"; break;
+        case -1: re = "Unknown Error"; break;
         case 0: re = "success"; break;
         case 1: re = "data process error"; break;
-        case 2: re = "user not exist"; break;
+        case 2: re = "user does not exist"; break;
         case 3: re = "wrong uid"; break;
         case 4: re = "admin account error"; break;
         case 5: re = "mode error"; break;
         case 6: re = "device_id error"; break;
         case 7: re = "data type error"; break;
         case 8: re = "request error"; break;
-        case 9: re = "account is existed"; break;
-        default: re = "user is existed"; break;
+        case 9: re = "account already exists"; break;
+        case 11: re = "Construct Error"; break;
+        default: re = "user already exists"; break;
     }
     return re;
 }
@@ -245,6 +305,7 @@ int Card::jsonDataReturn()
     int pos;
     int commaPosition, commaPosition1, commaPosition2;
     String inputString, jsonString, wantedString1, wantedString2;
+    DebugSerial.println("Json Data Return Function");
     memset(esp8266buffer, 0, 256);
     WIFISerial.readBytes(esp8266buffer, 256);
     for (unsigned int ii = 0; ii < 256; ii++) 
@@ -252,8 +313,8 @@ int Card::jsonDataReturn()
         temp=esp8266buffer[ii];
         inputString += temp;
     }
-    // DebugSerial.println(inputString);
-    if (inputString.indexOf("HTTP/1.1 200 OK") != -1)
+     DebugSerial.println(inputString);
+    if (inputString.indexOf("200 OK") != -1)
     {
         commaPosition=inputString.indexOf('{');
         wantedString1=inputString.substring(commaPosition,inputString.length());
@@ -264,18 +325,21 @@ int Card::jsonDataReturn()
         // DebugSerial.println(wantedString2);
         return wantedString2.toInt();
     }
+    DebugSerial.println("return -1");
     return -1;
 }
 
 /*
  * @intro: Debug串口打印WIFI串口信息
  */
-void Card::wifiSerialPrint()
+void Card::wifiSerialPrint(Screen& screen)
 {
+  String displayString = "";
     while (WIFISerial.available()) {
-        DebugSerial.print((char)WIFISerial.read());
+        displayString += char(WIFISerial.read());
     }
-    DebugSerial.println();
+    DebugSerial.println(displayString);
+    screen.ScreenCmd("dis", displayString);
 }
 
 void Card::jsonDebugPrint()
