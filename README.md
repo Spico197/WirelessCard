@@ -62,7 +62,7 @@ Web页面后台由Django和MongoDB组织，前端采用Semantic-UI。
 
 ### Json数据定义
 #### 普通用户刷卡模式
-```json
+```
 {
   "device_id": "<设备API Key>",
   "uid": "<射频卡读出的UID>",
@@ -75,7 +75,7 @@ Web页面后台由Django和MongoDB组织，前端采用Semantic-UI。
 ```
 
 #### 创建管理员模式
-```json
+```
 {
   "device_id": "<设备API Key>",
   "uid": "<射频卡读出的UID>",  // 此处为admin管理员的UID
@@ -88,7 +88,7 @@ Web页面后台由Django和MongoDB组织，前端采用Semantic-UI。
 ```
 
 #### 创建新普通用户模式
-```json
+```
 {
   "device_id": "<设备API Key>",
   "uid": "<射频卡读出的UID>",  // 此处为待添加用户的UID
@@ -101,7 +101,7 @@ Web页面后台由Django和MongoDB组织，前端采用Semantic-UI。
 ```
 
 #### 删除用户但保留用户数据模式
-```json
+```
 {
   "device_id": "<设备API Key>",
   "uid": "<射频卡读出的UID>",  // 此处为待删除用户的UID
@@ -114,7 +114,7 @@ Web页面后台由Django和MongoDB组织，前端采用Semantic-UI。
 ```
 
 #### 删除用户及其全部数据模式
-```json
+```
 {
   "device_id": "<设备API Key>",
   "uid": "<射频卡读出的UID>",  // 此处为待删除用户的UID
